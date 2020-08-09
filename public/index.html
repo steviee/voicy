@@ -1,0 +1,69 @@
+<style>
+    h2 {
+        left: 100px;
+        position: relative;
+    }
+
+    #recordedAudio {
+        left: 100px;
+        right: 100px;
+        position: relative;
+    }
+</style>
+
+<h2>Record</h2>
+<p>
+    <button id=record>Record</button>
+    <button id=stopRecord disabled>Stop</button>
+</p>
+<p>
+    <audio id=recordedAudio></audio>
+
+</p>
+<script>
+    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+        handlerFunction(stream);
+    });
+
+    function handlerFunction(stream) {
+        rec = new MediaRecorder(stream);
+        rec.ondataavailable = (e) => {
+            audioChunks.push(e.data);
+            if (rec.state == "inactive") {
+                let blob = new Blob(audioChunks, { type: "audio/mpeg-3" });
+                recordedAudio.src = URL.createObjectURL(blob);
+                recordedAudio.controls = true;
+                recordedAudio.autoplay = true;
+                sendData(blob);
+            }
+        };
+    }
+    function sendData(data) {
+        var request = new XMLHttpRequest();
+        request.addEventListener('load', function (event) {
+            if (request.status >= 200 && request.status < 300) {
+                console.log(request.responseText);
+            } else {
+                console.warn(request.statusText, request.responseText);
+            }
+        });
+        request.open("POST", "http://localhost:4000/msg");
+        request.send(data);
+    }
+
+    record.onclick = (e) => {
+        console.log("I was clicked");
+        record.disabled = true;
+        stopRecord.disabled = false;
+        audioChunks = [];
+        rec.start();
+    };
+    stopRecord.onclick = (e) => {
+        console.log("I was clicked");
+        record.disabled = false;
+        stop.disabled = true;
+        rec.stop();
+    };
+
+</script>
+
