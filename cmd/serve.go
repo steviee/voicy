@@ -16,8 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -33,9 +31,9 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := serve()
-    if err := nil {
-	return err
-    }
+		if err != nil {
+			panic(err)
+		}
 	},
 }
 
@@ -46,9 +44,14 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// serveCmd.PersistentFlags().String("foo", "", "A help for foo")
+	serveCmd.PersistentFlags().String("port", "4000", "the port to listen on")
+	serveCmd.PersistentFlags().String("bind", "0.0.0.0", "the IP to bind on")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// serveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func serve() error {
+	return nil
 }
