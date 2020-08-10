@@ -1,43 +1,81 @@
+<html>
+<head>
+    <script src="https://unpkg.com/wavesurfer.js"></script>
+    <title>Voicy</title>
+</head>
+<body>
 <style>
     h2 {
         left: 100px;
         position: relative;
     }
 
-    #recordedAudio {
-        left: 100px;
-        right: 100px;
+    #waveform {
+        width: 350px;
         position: relative;
     }
 </style>
-
-<h2>Record</h2>
 <p>
     <button id=record>Record</button>
     <button id=stopRecord disabled>Stop</button>
+    <button id=play disabled>Play</button>
+    <button id=send disabled>Submit</button>
 </p>
 <p>
+    <div id="waveform"></div></body>
     <audio id=recordedAudio></audio>
-
 </p>
+
 <script>
     navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
         handlerFunction(stream);
     });
+
+    var blob
 
     function handlerFunction(stream) {
         rec = new MediaRecorder(stream);
         rec.ondataavailable = (e) => {
             audioChunks.push(e.data);
             if (rec.state == "inactive") {
-                let blob = new Blob(audioChunks, { type: "audio/mpeg-3" });
+                blob = new Blob(audioChunks, { type: "audio/mpeg-3" });
                 recordedAudio.src = URL.createObjectURL(blob);
-                recordedAudio.controls = true;
-                recordedAudio.autoplay = true;
-                sendData(blob);
+                recordedAudio.controls = false;
+                recordedAudio.autoplay = false;
             }
+            wavesurfer.loadBlob(blob);
         };
     }
+
+    var wavesurfer = WaveSurfer.create({
+        container: '#waveform',
+        waveColor: 'violet',
+        backgroundColor: 'black',
+        progressColor: 'purple',
+        barWidth: 3
+    });
+
+    recordedAudio.on('')
+
+    wavesurfer.on('ready', function(){
+        play.disabled = false;
+        send.disabled = false;
+    });
+
+    wavesurfer.on('finish', function(){
+        play.disabled = false;
+    });
+
+   
+    play.onclick = (e) => {
+        console.log("Play was clicked");
+        record.disabled = true;
+        stopRecord.disabled = true;
+        play.disabled = true;
+        wavesurfer.play();
+    };
+
+
     function sendData(data) {
         var request = new XMLHttpRequest();
         request.addEventListener('load', function (event) {
@@ -51,6 +89,10 @@
         request.send(data);
     }
 
+    send.onclick = (e) => {
+        sendData(blob);
+    };
+
     record.onclick = (e) => {
         console.log("I was clicked");
         record.disabled = true;
@@ -58,12 +100,13 @@
         audioChunks = [];
         rec.start();
     };
+
     stopRecord.onclick = (e) => {
         console.log("I was clicked");
         record.disabled = false;
         stop.disabled = true;
         rec.stop();
     };
-
 </script>
 
+</html>
