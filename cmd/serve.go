@@ -16,24 +16,25 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"os"
+
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/cobra"
 )
 
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "run the service on the local node",
+	Long: `server starts the tiny web-service to receive voice messages from the running website.
+	This is the initial version and only very bare.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := serve()
-		if err != nil {
-			panic(err)
-		}
+		serve()
 	},
 }
 
@@ -52,6 +53,38 @@ func init() {
 	// serveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func serve() error {
-	return nil
+func serve() {
+	// Echo instance
+	e := echo.New()
+
+	// Middleware
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+	e.Static("/", "public")
+	// Routes
+	e.POST("/msg", hello)
+
+	// Start server
+	e.Logger.Fatal(e.Start(":4000"))
+
+}
+
+// Handler
+func hello(c echo.Context) error {
+
+	body, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		log.Printf("Error reading body: %v", err)
+	}
+
+	// Destination file
+	out, err := os.Create("kick.mp3")
+	if err != nil {
+		panic(fmt.Sprintf("couldn't create output file - %v", err))
+	}
+
+	_, _ = out.Write(body)
+	out.Close()
+
+	return c.String(http.StatusOK, "OK")
 }
