@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"os"
 
+	rice "github.com/GeertJohan/go.rice"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/cobra"
@@ -60,7 +61,10 @@ func serve() {
 	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	e.Static("/", "public")
+
+	assetHandler := http.FileServer(rice.MustFindBox("../public").HTTPBox())
+	// serves the index.html from rice
+	e.GET("/", echo.WrapHandler(assetHandler))
 	// Routes
 	e.POST("/msg", hello)
 
