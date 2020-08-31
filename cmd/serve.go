@@ -46,8 +46,8 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	serveCmd.PersistentFlags().String("port", "4000", "the port to listen on")
-	serveCmd.PersistentFlags().String("bind", "0.0.0.0", "the IP to bind on")
+	// serveCmd.PersistentFlags().String("port", "4000", "the port to listen on")
+	// serveCmd.PersistentFlags().String("bind", "0.0.0.0", "the IP to bind on")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
@@ -55,6 +55,9 @@ func init() {
 }
 
 func serve() {
+	// read the port
+	port := os.Getenv("PORT")
+
 	// Echo instance
 	e := echo.New()
 
@@ -69,7 +72,7 @@ func serve() {
 	e.POST("/msg", hello)
 
 	// Start server
-	e.Logger.Fatal(e.Start(":80"))
+	e.Logger.Fatal(e.Start(":" + port))
 
 }
 
