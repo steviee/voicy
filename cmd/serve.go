@@ -69,7 +69,7 @@ func serve() {
 	e.POST("/msg", hello)
 
 	// Start server
-	e.Logger.Fatal(e.Start(":4000"))
+	e.Logger.Fatal(e.Start(":80"))
 
 }
 
